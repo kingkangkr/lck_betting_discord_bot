@@ -6,8 +6,8 @@ def generate_math_question():
     operation = random.choice(operations)
 
     # Generating two random numbers
-    num1 = random.randint(1, 10)
-    num2 = random.randint(1, 10)
+    num1 = random.randint(50, 1000)
+    num2 = random.randint(50, 1000)
 
     # Creating the question
     if operation == '/':  # To avoid division by zero
