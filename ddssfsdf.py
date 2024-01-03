@@ -2,7 +2,7 @@ import discord
 import os
 from datetime import datetime
 import random
-
+#sex
 # 환경 변수에서 토큰 가져오기 (보안 강화)
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 
