@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
-
+import os
+db_password = os.getenv('db_password')
 def create_connection(host_name, user_name, user_password, db_name=None):
     connection = None
     try:
@@ -39,14 +40,14 @@ def create_table(connection, query):
     except Error as e:
         print(f"The error '{e}' occurred")
 # MySQL 서버에 연결
-connection = create_connection("127.0.0.1", "root", "0000")
+connection = create_connection("127.0.0.1", "root", db_password)
 
 # 데이터베이스 생성
 create_database(connection, "lck_betting_db")
 
 # 데이터베이스를 선택하기 위해 연결을 다시 설정
 connection.close()  # 이전 연결 닫기
-connection = create_connection("127.0.0.1", "root", "0000", "lck_betting_db")
+connection = create_connection("127.0.0.1", "root", db_password, "lck_betting_db")
 
 # Users 테이블 생성
 create_users_table = """
