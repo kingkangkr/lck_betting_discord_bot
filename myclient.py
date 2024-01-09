@@ -18,7 +18,18 @@ class MyClient(discord.Client):
             await message.channel.send(f'스 {message.author.mention}')
         elif message.content.startswith('!game'):
             await play_game(message)
+        elif message.content.startswith('!register'):
+            await register_user(message)
+        elif message.content == '!전체경기':
+            await show_all_matches(message)
+        elif message.content == '!경기':
+            await show_current_week_matches(message)
         else:
             answer = get_answer(message.content)
             if answer:
                 await message.channel.send(answer)
+
+
+
+
+
