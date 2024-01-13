@@ -29,16 +29,24 @@ def create_database(connection, db_name):
     cursor = connection.cursor()
     try:
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
-        print(f"Database {db_name} created successfully")
+        if cursor.rowcount:
+            print(f"Database {db_name} created successfully")
+        else:
+            print(f"Database {db_name} already exists")
     except Error as e:
         print(f"The error '{e}' occurred")
+
 def create_table(connection, query):
     cursor = connection.cursor()
     try:
         cursor.execute(query)
-        print("Table created successfully")
+        if cursor.rowcount:
+            print("Table created successfully")
+        else:
+            print("Table already exists")
     except Error as e:
         print(f"The error '{e}' occurred")
+
 # MySQL 서버에 연결
 connection = create_connection("127.0.0.1", "root", db_password)
 
