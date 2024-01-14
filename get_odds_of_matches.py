@@ -1,45 +1,45 @@
+# Set options for WebDriver
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import time
 import os
-# Set options for WebDriver
-options = Options()
-#options.headless = False  # Set to True for headless mode
-#driver_path = r'C:\Users\Byung Mu Kang\Downloads\chromedriver_win32\chromedriver.exe'
 
-'''service = Service(executable_path=driver_path)
-driver = webdriver.Chrome(service=service, options=options)
+# Check if the HTML file already exists
+file_path = 'week1_odds.html'
+if os.path.isfile(file_path):
+    # If the file exists, read its content
+    with open(file_path, 'r', encoding='utf-8') as file:
+        html_content = file.read()
+else:
+    # If the file doesn't exist, run Selenium to fetch the HTML
+    options = Options()
+    options.headless = False  # Set to True for headless mode
+    driver_path = r'C:\Users\Byung Mu Kang\Downloads\chromedriver_win32\chromedriver.exe'
+    service = Service(executable_path=driver_path)
+    driver = webdriver.Chrome(service=service, options=options)
 
-# Open the webpage
-url = 'https://www.oddsportal.com/esports/league-of-legends/league-of-legends-lck/'
-driver.get(url)
-time.sleep(5)  # 동적 콘텐츠 로드를 위해 대기
+    # Open the webpage
+    url = 'https://www.oddsportal.com/esports/league-of-legends/league-of-legends-lck/'
+    driver.get(url)
+    time.sleep(5)  # Wait for dynamic content to load
 
-# HTML 내용 가져오기
-html = driver.page_source
-driver.quit()
+    # Get the HTML content
+    html_content = driver.page_source
 
-# Parsing the full HTML content with BeautifulSoup
-soup_full = BeautifulSoup(html, 'html.parser')
-current_directory = os.getcwd()
-html_file_name = "saved_html_content.html"
+    # Save the HTML content to a file
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(html_content)
 
-# Create the full path for the file in the current working directory
-html_file_path_cwd = os.path.join(current_directory, html_file_name)
+    # Close the Selenium driver
+    driver.quit()
 
-# Write the HTML content to the file in the current working directory
-with open(html_file_path_cwd, 'w', encoding='utf-8') as file:
-    file.write(html)'''
-# 저장된 HTML 파일의 경로
-file_path = 'saved_html_content.html'  # 여기에 실제 파일 경로 입력
-
-# 파일 열기 및 내용 읽기
-with open(file_path, 'r', encoding='utf-8') as file:
-    html_content = file.read()
-
+# Parse the HTML content with BeautifulSoup
 soup_full = BeautifulSoup(html_content, 'html.parser')
+
+# Rest of your code to extract and process data from the HTML content
+
 
 # Using a lambda function to match elements with 'default-odds' in their class attribute in the full HTML content
 all_elements_with_default_odds_full = soup_full.find_all(lambda tag: tag.get('class') and 'default-odds' in ' '.join(tag.get('class')))
@@ -56,5 +56,19 @@ formatted_matches = []
 for i in range(0, len(team_names), 2):
     match = f"{team_names[i]} vs {team_names[i+1]} - {team_names[i]} 배당: {odds[i]}, {team_names[i+1]} 배당: {odds[i+1]}"
     formatted_matches.append(match)
-
 print(formatted_matches)
+import re
+
+# 배당률을 저장할 리스트 초기화
+odds_list = []
+
+# 각 formatted_match에서 배당률 추출
+for match in formatted_matches:
+    # 정규 표현식을 사용하여 배당률 부분 추출
+    odds= re.findall(r"\d+.\d+", match)
+    if len(odds) == 2:
+    # 추출된 배당률을 숫자로 변환하여 튜플 형태로 저장
+        odds_tuple = (float(odds[0]), float(odds[1]))
+        odds_list.append(odds_tuple)
+
+print(odds_list)
