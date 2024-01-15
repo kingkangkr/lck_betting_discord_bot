@@ -1,3 +1,7 @@
+# 추가할 기능
+# 문제 맞추면 포인트 지급, 문제 풀 시 3초 제한. 3, 2, 1 메세지 띄우기
+# 나누기 소수점 안나오게
+
 import random
 
 def generate_math_question():
@@ -25,3 +29,4 @@ def generate_math_question():
 for _ in range(5):
     q, a = generate_math_question()
     print(f"Question: {q} = ?\nAnswer: {a}\n")
+
