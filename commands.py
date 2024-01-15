@@ -41,6 +41,17 @@ async def get_betting_predictions(client, message):
         await message.channel.send("현재 진행 중인 경기가 없습니다.")
         return
     discord_id = str(message.author.id)  # 사용자의 Discord ID
+    # 데이터베이스에서 동일한 주차와 Discord ID에 대한 베팅 확인
+    cursor = client.connection.cursor()
+    query = "SELECT * FROM Bets WHERE DiscordID = %s AND Week = %s"
+    cursor.execute(query, (discord_id, current_week))
+    existing_bet = cursor.fetchone()
+    cursor.fetchall()
+    cursor.close()
+
+    if existing_bet:
+        await message.channel.send("이미 이번 주에 베팅을 하셨습니다.")
+        return
     week_matches = get_matches_for_current_week(current_week, matches)
     betting_predictions = []
     all_saved_successfully = True  # 모든 저장이 성공했는지 추적하는 변수
