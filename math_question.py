@@ -1,27 +1,3 @@
-import random
-import time
-
-def generate_math_question():
-    # Types of operations
-    operations = ['+', '-', '*', '/']
-    operation = random.choice(operations)
-
-    # Generating two random numbers
-    num1 = random.randint(1, 10)
-    num2 = random.randint(1, 10)
-
-    # 나눗셈 무조건 자연수로 답 나오게 num1을 num2의 배수로 설정
-    if operation == '/':
-        num1 = num2 * random.randint(1, 10)
-        question = f"{num1} {operation} {num2}"
-        answer = num1 / num2
-    else:
-        question = f"{num1} {operation} {num2}"
-        answer = eval(question)
-
-    # Formatting the question and answer
-    return question, answer
-
 
 # 계산 문제를 출력하고 사용자가 입력한 답을 판별하는 함수
 def execute_math_question(question, answer):
@@ -71,4 +47,20 @@ for _ in range(5):
 
 
 
+
+=======
+def countdown(seconds):
+    for i in range(seconds, 0, -1):
+        print(i)
+        time.sleep(1)
+
+def ask_math_question():
+    q, a = generate_math_question()
+    print(f"Question: {q} = ?")
+    countdown(3)
+    print(f"Answer: {a}\n")
+
+# Example: Generate 5 random math questions
+for _ in range(5):
+    ask_math_question()
 
