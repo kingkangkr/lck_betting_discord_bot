@@ -1,7 +1,7 @@
 import os
 import discord
 from myclient import MyClient
-
+#머지 테스트
 # 환경 변수 로드
 
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
