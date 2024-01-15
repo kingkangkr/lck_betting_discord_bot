@@ -76,7 +76,6 @@ def get_current_week(test_date=None):
         ("2024-03-11", "2024-03-17"),  # 8주차
         ("2024-03-18", "2024-03-24"),  # 9주차
     ]
-    test_date = test_date if test_date else datetime(2024, 1, 15).date()
     today = test_date if test_date else datetime.today().date()
     for idx, (start_date, end_date) in enumerate(date_ranges):
         if datetime.strptime(start_date, "%Y-%m-%d").date() <= today <= datetime.strptime(end_date, "%Y-%m-%d").date():

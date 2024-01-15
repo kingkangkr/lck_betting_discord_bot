@@ -41,6 +41,10 @@ async def get_betting_predictions(client, message):
         await message.channel.send("현재 진행 중인 경기가 없습니다.")
         return
     discord_id = str(message.author.id)  # 사용자의 Discord ID
+    # Check if the user is registered
+    if not is_user_registered(client.connection, discord_id):
+        await message.channel.send("먼저 !register를 이용해서 사용자 등록을 해주세요.")
+        return
     # 데이터베이스에서 동일한 주차와 Discord ID에 대한 베팅 확인
     cursor = client.connection.cursor()
     query = "SELECT * FROM Bets WHERE DiscordID = %s AND Week = %s"
