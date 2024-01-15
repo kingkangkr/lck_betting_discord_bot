@@ -112,6 +112,18 @@ def is_user_registered(connection, discord_id):
     cursor.execute(query)
     user = cursor.fetchone()
     return user is not None
-
+def save_bet(discord_id, week, match_id, team_choice, bet_amount, connection):
+    try:
+        cursor = connection.cursor()
+        bet_time = datetime.now()
+        query = "INSERT INTO Bets (DiscordID, Week, MatchID, TeamChoice, BetAmount, BetTime) VALUES (%s, %s, %s, %s, %s, %s)"
+        values = (discord_id, week, match_id, team_choice, bet_amount, bet_time)
+        cursor.execute(query, values)
+        connection.commit()
+        cursor.close()
+        return True
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
 
 

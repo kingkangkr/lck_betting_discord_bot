@@ -40,10 +40,10 @@ async def get_betting_predictions(client, message):
     if current_week is None:
         await message.channel.send("현재 진행 중인 경기가 없습니다.")
         return
-
+    discord_id = str(message.author.id)  # 사용자의 Discord ID
     week_matches = get_matches_for_current_week(current_week, matches)
     betting_predictions = []
-
+    all_saved_successfully = True  # 모든 저장이 성공했는지 추적하는 변수
     for i, match in enumerate(week_matches):
         # 해당 경기의 배당률 정보 가져오기
         odds = odds_list[i] if i < len(odds_list) else (None, None)
@@ -77,8 +77,16 @@ async def get_betting_predictions(client, message):
         bet_amount_value = int(bet_amount.content)
         potential_earnings = int(bet_amount_value * odds[selected_team]) if odds[selected_team] else 0
         betting_predictions.append((team_choice.content, bet_amount.content, potential_earnings))
-
+        match_id = (current_week - 1) * 10 + i + 1
+        team_choice_value = selected_team + 1
+        save_success = save_bet(discord_id, current_week, match_id, team_choice_value, bet_amount_value, client.connection)
+        if not save_success:
+            all_saved_successfully = False
         # 모든 베팅 정보와 예상 수익 출력
+    if all_saved_successfully:
+        await message.channel.send("DB에 정확히 저장되었습니다.")
+    else:
+        await message.channel.send("일부 베팅 정보가 DB에 저장되지 않았습니다.")
     for i, prediction in enumerate(betting_predictions):
         selected_team_index = int(prediction[0]) - 1  # 선택한 팀 인덱스 (0 또는 1)
         team_name = week_matches[i][selected_team_index]  # 선택한 팀 이름
