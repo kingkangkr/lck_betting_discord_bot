@@ -192,10 +192,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.math_question" />
-        <item itemvalue="Python.main" />
-        <item itemvalue="Python.commands" />
-        <item itemvalue="Python.get_odds_of_matches" />
         <item itemvalue="Python.rtd" />
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.get_odds_of_matches" />
+        <item itemvalue="Python.commands" />
       </list>
     </recent_temporary>
   </component>
@@ -242,11 +242,36 @@
       <workItem from="1705243885105" duration="2760000" />
       <workItem from="1705326886810" duration="412000" />
       <workItem from="1705330340347" duration="874000" />
+      <workItem from="1705331666660" duration="4000" />
+      <workItem from="1705331685777" duration="301000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/html_refine_py$s.coverage" NAME="s Coverage Results" MODIFIED="1704551511726" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
