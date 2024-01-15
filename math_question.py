@@ -1,4 +1,5 @@
 import random
+import time
 
 def generate_math_question():
     # Types of operations
@@ -21,7 +22,17 @@ def generate_math_question():
     # Formatting the question and answer
     return question, round(answer, 2)
 
+def countdown(seconds):
+    for i in range(seconds, 0, -1):
+        print(i)
+        time.sleep(1)
+
+def ask_math_question():
+    q, a = generate_math_question()
+    print(f"Question: {q} = ?")
+    countdown(3)
+    print(f"Answer: {a}\n")
+
 # Example: Generate 5 random math questions
 for _ in range(5):
-    q, a = generate_math_question()
-    print(f"Question: {q} = ?\nAnswer: {a}\n")
+    ask_math_question()
