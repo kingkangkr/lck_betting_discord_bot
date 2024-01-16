@@ -1,7 +1,10 @@
 import mysql.connector
 from mysql.connector import Error
 import os
+
 db_password = os.getenv('db_password')
+
+
 def create_connection(host_name, user_name, user_password, db_name=None):
     connection = None
     try:
@@ -36,6 +39,7 @@ def create_database(connection, db_name):
     except Error as e:
         print(f"The error '{e}' occurred")
 
+
 def create_table(connection, query):
     cursor = connection.cursor()
     try:
@@ -46,6 +50,7 @@ def create_table(connection, query):
             print("Table already exists")
     except Error as e:
         print(f"The error '{e}' occurred")
+
 
 # MySQL 서버에 연결
 connection = create_connection("127.0.0.1", "root", db_password)

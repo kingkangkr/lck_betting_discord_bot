@@ -4,14 +4,16 @@ from match_data import matches
 from get_odds_of_matches import odds_list
 import asyncio
 
+
 async def play_game(message):
     choices = ['가위', '바위', '보']
     bot_choice = random.choice(choices)
     await message.channel.send(f'봇이 선택한 것은 {bot_choice}입니다!')
 
-async def register_user(client,message):
+
+async def register_user(client, message):
     discord_id = str(message.author.id)  # Get the Discord ID of the user
-    name = message.author.name           # Get the Discord Name of the user
+    name = message.author.name  # Get the Discord Name of the user
 
     # Check if the user is already registered
     if is_user_registered(client.connection, discord_id):
@@ -21,9 +23,11 @@ async def register_user(client,message):
         register_new_user(discord_id, name)
         await message.channel.send(f"{message.author.mention}, 등록이 완료되었습니다.")
 
+
 async def show_all_matches(message):
     response = "전체 경기 일정:\n" + format_matches_by_week(matches)
     await message.channel.send(response)
+
 
 async def show_current_week_matches(message):
     week = get_current_week()
@@ -35,6 +39,8 @@ async def show_current_week_matches(message):
         for match in matches_this_week:
             response += f"{match[0]} vs {match[1]}\n"
     await message.channel.send(response)
+
+
 async def get_betting_predictions(client, message):
     current_week = get_current_week()
     if current_week is None:
@@ -140,7 +146,8 @@ async def get_betting_predictions(client, message):
         betting_predictions.append((team_choice.content, bet_amount, potential_earnings))
         match_id = (current_week - 1) * 10 + i + 1
         team_choice_value = selected_team + 1
-        save_success = save_bet(discord_id, current_week, match_id, team_choice_value, bet_amount_value, client.connection)
+        save_success = save_bet(discord_id, current_week, match_id, team_choice_value, bet_amount_value,
+                                client.connection)
         if not save_success:
             all_saved_successfully = False
         # 모든 베팅 정보와 예상 수익 출력
@@ -151,6 +158,5 @@ async def get_betting_predictions(client, message):
     for i, prediction in enumerate(betting_predictions):
         selected_team_index = int(prediction[0]) - 1  # 선택한 팀 인덱스 (0 또는 1)
         team_name = week_matches[i][selected_team_index]  # 선택한 팀 이름
-        await message.channel.send(f"선택한 팀: {team_name} ({prediction[0]}), 베팅 금액: {prediction[1]}, 맞히면 얻는 금액: {prediction[2]}")
-
-    #
+        await message.channel.send(
+            f"선택한 팀: {team_name} ({prediction[0]}), 베팅 금액: {prediction[1]}, 맞히면 얻는 금액: {prediction[2]}")

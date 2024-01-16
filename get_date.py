@@ -1,5 +1,7 @@
 from datetime import datetime
 from match_data import matches
+
+
 def get_current_week(test_date=None):
     date_ranges = [
         ("2024-01-15", "2024-01-21"),  # 1주차
@@ -20,6 +22,7 @@ def get_current_week(test_date=None):
 
     return None  # 해당되는 주차가 없는 경우
 
+
 def get_matches_for_current_week(week, matches):
     if week is None:
         return "현재 진행 중인 경기가 없습니다."
@@ -31,7 +34,6 @@ def get_matches_for_current_week(week, matches):
         return "이번 주는 경기가 없습니다."
 
     return weekly_matches
-
 
 
 current_week = get_current_week()
