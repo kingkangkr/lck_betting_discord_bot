@@ -124,5 +124,36 @@ def save_bet(discord_id, week, match_id, team_choice, bet_amount, connection):
     except Exception as e:
         print(f"An error occurred: {e}")
         return False
+def add_points(connection, discord_id, amount):
+    cursor = connection.cursor()
+    cursor.execute("SELECT points FROM Users WHERE DiscordID = %s", (discord_id,))
+    user_points = cursor.fetchone()[0]
+
+    if amount > user_points:
+        return False, user_points  # Not enough points
+
+    new_points = user_points + amount
+    cursor.execute("UPDATE Users SET points = %s WHERE DiscordID = %s", (new_points, discord_id))
+    connection.commit()
+
+    return True, new_points  # Points deducted successfully
+def deduct_points(connection, discord_id, amount):
+    cursor = connection.cursor()
+    cursor.execute("SELECT points FROM Users WHERE DiscordID = %s", (discord_id,))
+    user_points = cursor.fetchone()[0]
+
+    if amount > user_points:
+        return False, user_points  # Not enough points
+
+    new_points = user_points - amount
+    cursor.execute("UPDATE Users SET points = %s WHERE DiscordID = %s", (new_points, discord_id))
+    connection.commit()
+
+    return True, new_points  # Points deducted successfully
+def get_user_points(connection, discord_id):
+    cursor = connection.cursor()
+    cursor.execute("SELECT points FROM Users WHERE DiscordID = %s", (discord_id,))
+    user_points = cursor.fetchone()[0]
+    return user_points
 
 
