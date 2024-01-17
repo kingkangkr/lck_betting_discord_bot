@@ -2,7 +2,7 @@ from datetime import datetime
 from create_db import create_connection
 from mysql.connector import Error
 import os
-
+from get_odds_of_matches import odds_list
 db_password = os.getenv('db_password')
 
 
@@ -178,3 +178,50 @@ def get_user_points(connection, discord_id):
     cursor.execute("SELECT points FROM Users WHERE DiscordID = %s", (discord_id,))
     user_points = cursor.fetchone()[0]
     return user_points
+def get_all_bets_by_week(connection, week):
+    cursor = connection.cursor()
+
+    # 주어진 week에 대한 모든 베팅 정보를 id별로 정렬하여 조회
+    query = """
+    SELECT DiscordID, TeamChoice, BetAmount FROM Bets
+    WHERE Week = %s
+    ORDER BY DiscordID
+    """
+    cursor.execute(query, (week,))
+
+    bets = cursor.fetchall()
+
+    bets_dict = {}
+    for discord_id, teamchoice, betamount in bets:
+        if discord_id not in bets_dict:
+            bets_dict[discord_id] = []
+        bets_dict[discord_id].append(f"{teamchoice} {betamount}")
+
+    return bets_dict
+def calculate_betting_results(match_results, odds_list, bets_dict):
+    winnings = {}
+
+    for discord_id, bets in bets_dict.items():
+        total_winning = 0
+        for i, bet in enumerate(bets):
+            team_choice, bet_amount = map(int, bet.split())
+            if team_choice == match_results[i]:
+                print(discord_id)
+                # 승리한 팀의 배당률을 찾아 베팅 금액에 곱하기
+                odds = odds_list[i][team_choice - 1]
+                print(bet_amount * odds)
+                total_winning += bet_amount * odds
+
+
+        winnings[discord_id] = total_winning
+
+    return winnings
+connection = create_connection("127.0.0.1", "root", db_password, "lck_betting_db")
+# 함수 호출 예시
+week = 1
+week_bets = get_all_bets_by_week(connection, week)
+print(week_bets)
+match_results = [2, 1, 1, 1, 1, 2, 2, 2, 2, 2]
+betting_winnings = calculate_betting_results(match_results, odds_list, week_bets)
+for discord_id, winning in betting_winnings.items():
+    print(f"{discord_id}: {winning}")
