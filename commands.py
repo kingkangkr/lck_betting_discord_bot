@@ -95,7 +95,7 @@ async def get_betting_predictions(client, message):
         user_points = get_user_points(client.connection, discord_id)
 
         # 베팅 금액 프롬프트
-        bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. 금액을 입력해주세요: "
+        bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. 베팅 금액으로 1을 입력할 시 기본 금액인 1000이 베팅 됩니다. 금액을 입력해주세요: "
         await message.channel.send(bet_amount_prompt)
 
         def check_bet_amount(m):
@@ -109,6 +109,8 @@ async def get_betting_predictions(client, message):
             try:
                 bet_message = await client.wait_for('message', check=check_bet_amount, timeout=30.0)
                 bet_amount = int(bet_message.content)
+                if bet_amount == 1:
+                    bet_amount = 1000
                 # 사용자의 현재 포인트 가져오기
                 user_points = get_user_points(client.connection, discord_id)
 
@@ -160,3 +162,49 @@ async def get_betting_predictions(client, message):
         team_name = week_matches[i][selected_team_index]  # 선택한 팀 이름
         await message.channel.send(
             f"선택한 팀: {team_name} ({prediction[0]}), 베팅 금액: {prediction[1]}, 맞히면 얻는 금액: {prediction[2]}")
+async def show_rank(message):
+    # 데이터베이스 연결 설정
+    connection = create_connection("127.0.0.1", "root", db_password, "lck_betting_db")
+    if connection is not None:
+        try:
+            ranked_users = get_users_ranked_by_points(connection)
+            response = "사용자 포인트 순위:\n"
+            for rank, (user_id, points) in enumerate(ranked_users, start=1):
+                response += f"{rank}등: {user_id}, points {points}\n"
+            await message.channel.send(response)
+        finally:
+            connection.close()
+    else:
+        await message.channel.send("데이터베이스 연결에 실패했습니다.")
+async def handle_weekly_summary(message, connection, odds_list):
+    week = get_current_week()
+    week_bets = get_all_bets_by_week(connection, week)
+    match_results = [2, 1, 1, 1, 1, 2, 2, 2, 2, 2]  # 이번 주 경기 결과
+
+    betting_winnings, result = calculate_betting_results(match_results, odds_list, week_bets)
+    # 사용자 이름을 가져오기 위한 SQL 쿼리
+    def get_user_name(discord_id):
+        cursor = connection.cursor()
+        query = "SELECT Name FROM Users WHERE DiscordID = %s"
+        cursor.execute(query, (discord_id,))
+        result = cursor.fetchone()
+        return result[0] if result else None
+
+    # 승리 횟수에 따라 사용자의 name으로 정렬
+    user_names_with_wins = [(get_user_name(discord_id), wins) for discord_id, wins in result.items()]
+    sorted_results = sorted(user_names_with_wins, key=lambda x: x[1], reverse=True)
+
+    response = "이번 주 베팅 결과:\n"
+
+    total_len = len(match_results)
+
+    for discord_id, winning in betting_winnings.items():
+        user_name = get_user_name(discord_id)
+        response += f"{user_name if user_name else 'Unknown'}: 이득 {winning}, 결과 {result[discord_id]}승 {total_len - result[discord_id]}패\n"
+
+        # 승리 횟수 순으로 사용자 정렬 결과 추가
+    response += "\n승리 횟수 순 사용자:\n"
+    for user_name, wins in sorted_results:
+        response += f"{user_name if user_name else 'Unknown'}: {wins}승\n"
+
+    await message.channel.send(response)

@@ -1,8 +1,9 @@
 import discord
 from commands import *
-
+manager_discord_id = 336394598781943809
 
 class MyClient(discord.Client):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.connection = create_connection("127.0.0.1", "root", db_password, "lck_betting_db")
@@ -24,13 +25,13 @@ class MyClient(discord.Client):
         elif message.content.startswith('!register'):
             await register_user(self, message)
 
-        elif message.content == '!전체경기':
+        elif message.content == '!전체경기' or message.content == '!ㅈㅊㄱㄱ':
             await show_all_matches(message)
 
-        elif message.content == '!경기':
+        elif message.content == '!경기' or message.content == '!ㄱㄱ':
             await show_current_week_matches(message)
 
-        elif message.content == '!베팅':
+        elif message.content == '!베팅' or message.content == '!ㅂㅌ':
             await get_betting_predictions(self, message)
 
         # 테스트 전용 코드
@@ -78,7 +79,7 @@ class MyClient(discord.Client):
             except ValueError:
                 await message.channel.send('잘못된 금액입니다. 숫자를 입력해주세요.')
 
-        elif message.content == '!포인트':
+        elif message.content == '!포인트' or message.content == '!ㅍㅇㅌ':
             discord_id = str(message.author.id)
             # 사용자의 현재 포인트를 조회
             user_points = get_user_points(self.connection, discord_id)
@@ -91,6 +92,16 @@ class MyClient(discord.Client):
             if add_success:
                 await show_current_week_matches(message)
                 await message.channel.send(f"포인트가 추가되었습니다. 새로운 포인트: {new_points}")
+
+        elif message.content == "!순위" or message.content == "!ㅅㅇ":
+            await show_rank(message)
+
+        elif message.content == "!ㅇㅅㅇ" and message.author.id == manager_discord_id:
+            await message.channel.send('ㅇㅅㅇ')
+
+        elif message.content == "!주간결산" and message.author.id == manager_discord_id:
+            await handle_weekly_summary(message, self.connection, odds_list)
+
 
         else:
             answer = get_answer(message.content)

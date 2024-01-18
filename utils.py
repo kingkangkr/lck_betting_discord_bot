@@ -200,28 +200,37 @@ def get_all_bets_by_week(connection, week):
     return bets_dict
 def calculate_betting_results(match_results, odds_list, bets_dict):
     winnings = {}
-
+    result = {}
     for discord_id, bets in bets_dict.items():
+        win_num = 0
         total_winning = 0
         for i, bet in enumerate(bets):
             team_choice, bet_amount = map(int, bet.split())
             if team_choice == match_results[i]:
-                print(discord_id)
                 # 승리한 팀의 배당률을 찾아 베팅 금액에 곱하기
                 odds = odds_list[i][team_choice - 1]
-                print(bet_amount * odds)
                 total_winning += bet_amount * odds
+
+                win_num += 1
 
 
         winnings[discord_id] = total_winning
-
-    return winnings
+        result[discord_id] = win_num
+    return winnings, result
+def get_users_ranked_by_points(connection):
+    cursor = connection.cursor()
+    query = "SELECT Name, points FROM Users ORDER BY points DESC"
+    cursor.execute(query)
+    return cursor.fetchall()
 connection = create_connection("127.0.0.1", "root", db_password, "lck_betting_db")
 # 함수 호출 예시
 week = 1
 week_bets = get_all_bets_by_week(connection, week)
-print(week_bets)
+#print(week_bets)
 match_results = [2, 1, 1, 1, 1, 2, 2, 2, 2, 2]
-betting_winnings = calculate_betting_results(match_results, odds_list, week_bets)
+betting_winnings, result = calculate_betting_results(match_results, odds_list, week_bets)
+total_len = 10
 for discord_id, winning in betting_winnings.items():
     print(f"{discord_id}: {winning}")
+for discord_id, win_num in result.items():
+    print(f"{discord_id}: {win_num}승 {total_len - win_num}패")
