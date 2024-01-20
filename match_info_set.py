@@ -2,7 +2,7 @@ import mysql.connector
 from mysql.connector import Error
 from datetime import datetime, timedelta
 import os
-from match_data import matches
+from texts import matches
 
 db_password = os.getenv('db_password')
 
@@ -64,5 +64,3 @@ for week in range(1, 10):  # 9주 동안
     start_date += timedelta(weeks=1)  # 다음 주로 이동
     if week == 3:  # 3주차 이후에 추가 날짜 조정
         start_date += timedelta(days=7)  # 설날 휴일을 고려하여 추가 일주일 증가
-print(temp)
-print(db_password)

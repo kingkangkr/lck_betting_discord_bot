@@ -1,6 +1,9 @@
 import discord
 from commands import *
+from texts import video_links
+
 manager_discord_id = 336394598781943809
+
 
 class MyClient(discord.Client):
 
@@ -22,7 +25,7 @@ class MyClient(discord.Client):
         elif message.content.startswith('!game'):
             await play_game(message)
 
-        elif message.content.startswith('!register'):
+        elif message.content.startswith('!register') or message.content == '!등록' or message.content == '!ㄷㄹ':
             await register_user(self, message)
 
         elif message.content == '!전체경기' or message.content == '!ㅈㅊㄱㄱ':
@@ -33,51 +36,6 @@ class MyClient(discord.Client):
 
         elif message.content == '!베팅' or message.content == '!ㅂㅌ':
             await get_betting_predictions(self, message)
-
-        # 테스트 전용 코드
-        elif message.content == '!add':
-            discord_id = str(message.author.id)
-            # 봇이 포인트 추가 금액을 물어봄
-            await message.channel.send("얼마를 더할까요?")
-
-            def check(m):
-                return m.author == message.author and m.channel == message.channel
-
-            try:
-                amount_message = await self.wait_for('message', check=check, timeout=30.0)
-                amount = int(amount_message.content)  # 여전히 숫자로 변환은 필요함
-                # 포인트 추가 함수 호출
-                add_success, new_points = add_points(self.connection, discord_id, amount)
-                if add_success:
-                    await message.channel.send(f"{amount}포인트가 추가되었습니다. 새로운 포인트: {new_points}")
-                else:
-                    await message.channel.send("포인트 추가에 실패했습니다.")
-            except asyncio.TimeoutError:
-                await message.channel.send('시간 초과입니다. 다시 시도해주세요.')
-            except ValueError:
-                await message.channel.send('잘못된 금액입니다. 숫자를 입력해주세요.')
-
-        elif message.content == '!minus':
-            discord_id = str(message.author.id)
-            # 봇이 포인트 추가 금액을 물어봄
-            await message.channel.send("얼마를 뺼까요?")
-
-            def check(m):
-                return m.author == message.author and m.channel == message.channel
-
-            try:
-                amount_message = await self.wait_for('message', check=check, timeout=30.0)
-                amount = int(amount_message.content)  # 여전히 숫자로 변환은 필요함
-                # 포인트 추가 함수 호출
-                minus_success, new_points = deduct_points(self.connection, discord_id, amount)
-                if minus_success:
-                    await message.channel.send(f"{amount}포인트가 추가되었습니다. 새로운 포인트: {new_points}")
-                else:
-                    await message.channel.send("포인트 추가에 실패했습니다.")
-            except asyncio.TimeoutError:
-                await message.channel.send('시간 초과입니다. 다시 시도해주세요.')
-            except ValueError:
-                await message.channel.send('잘못된 금액입니다. 숫자를 입력해주세요.')
 
         elif message.content == '!포인트' or message.content == '!ㅍㅇㅌ':
             discord_id = str(message.author.id)
@@ -96,12 +54,20 @@ class MyClient(discord.Client):
         elif message.content == "!순위" or message.content == "!ㅅㅇ":
             await show_rank(message)
 
-        elif message.content == "!ㅇㅅㅇ" and message.author.id == manager_discord_id:
-            await message.channel.send('ㅇㅅㅇ')
-
         elif message.content == "!주간결산" and message.author.id == manager_discord_id:
             await handle_weekly_summary(message, self.connection, odds_list)
 
+        elif message.content == "!하이라이트" or message.content == "!ㅎㅇㄹㅇㅌ":
+            response = "방장 추천 LCK 영상:\n"
+            for week, link in video_links.items():
+                response += f"{week}: {link}\n"
+            await message.channel.send(response)
+
+        elif message.content == "!블랙잭" or message.content == "!ㅂㄹㅈ":
+            await start_blackjack_game(self, message)
+
+        # elif message.content.startswith('!문제'):
+        #     await self.math_quiz(message)
 
         else:
             answer = get_answer(message.content)

@@ -1,5 +1,5 @@
 from datetime import datetime
-from match_data import matches
+from texts import matches
 
 
 def get_current_week(test_date=None):

@@ -222,15 +222,3 @@ def get_users_ranked_by_points(connection):
     query = "SELECT Name, points FROM Users ORDER BY points DESC"
     cursor.execute(query)
     return cursor.fetchall()
-connection = create_connection("127.0.0.1", "root", db_password, "lck_betting_db")
-# 함수 호출 예시
-week = 1
-week_bets = get_all_bets_by_week(connection, week)
-#print(week_bets)
-match_results = [2, 1, 1, 1, 1, 2, 2, 2, 2, 2]
-betting_winnings, result = calculate_betting_results(match_results, odds_list, week_bets)
-total_len = 10
-for discord_id, winning in betting_winnings.items():
-    print(f"{discord_id}: {winning}")
-for discord_id, win_num in result.items():
-    print(f"{discord_id}: {win_num}승 {total_len - win_num}패")

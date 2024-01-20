@@ -1,10 +1,12 @@
 import random
-from utils import *
-from match_data import matches
-from get_odds_of_matches import odds_list
 import asyncio
+from utils import *
+from texts import matches
+from get_odds_of_matches import odds_list
+from blackjack import BlackjackGame
+#from math_question import generate_math_question
 
-
+weekly_summaries = []
 async def play_game(message):
     choices = ['가위', '바위', '보']
     bot_choice = random.choice(choices)
@@ -179,9 +181,16 @@ async def show_rank(message):
 async def handle_weekly_summary(message, connection, odds_list):
     week = get_current_week()
     week_bets = get_all_bets_by_week(connection, week)
-    match_results = [2, 1, 1, 1, 1, 2, 2, 2, 2, 2]  # 이번 주 경기 결과
+    match_results = [2, 1, 2, 1, 1, 2, 2, 2, 2, 2]  # 이번 주 경기 결과
 
     betting_winnings, result = calculate_betting_results(match_results, odds_list, week_bets)
+
+    # 각 사용자의 포인트를 데이터베이스에 업데이트
+    for discord_id, winnings in betting_winnings.items():
+        add_success, new_points = add_points(connection, discord_id, winnings)
+        if not add_success:
+            print(f"Error updating points for Discord ID {discord_id}")
+
     # 사용자 이름을 가져오기 위한 SQL 쿼리
     def get_user_name(discord_id):
         cursor = connection.cursor()
@@ -200,7 +209,7 @@ async def handle_weekly_summary(message, connection, odds_list):
 
     for discord_id, winning in betting_winnings.items():
         user_name = get_user_name(discord_id)
-        response += f"{user_name if user_name else 'Unknown'}: 이득 {winning}, 결과 {result[discord_id]}승 {total_len - result[discord_id]}패\n"
+        response += f"{user_name if user_name else 'Unknown'}: 이득 {int(winning)}, 결과 {result[discord_id]}승 {total_len - result[discord_id]}패\n"
 
         # 승리 횟수 순으로 사용자 정렬 결과 추가
     response += "\n승리 횟수 순 사용자:\n"
@@ -208,3 +217,77 @@ async def handle_weekly_summary(message, connection, odds_list):
         response += f"{user_name if user_name else 'Unknown'}: {wins}승\n"
 
     await message.channel.send(response)
+    weekly_summaries.append(response)
+
+async def start_blackjack_game(self, message):
+    game = BlackjackGame()
+    discord_id = str(message.author.id)
+    # Fetch user's current points (assuming a function exists to do this)
+    user_points = get_user_points(self.connection, discord_id)
+
+        # Ask for bet amount
+    bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. 베팅 금액으로 1을 입력할 시 기본 금액인 1000이 베팅 됩니다. 금액을 입력해주세요: "
+    await message.channel.send(bet_amount_prompt)
+
+    # Wait for player's response and validate bet
+    try:
+        reply = await self.wait_for('message', check=lambda m: m.author == message.author, timeout=30.0)
+        bet_amount = int(reply.content)  # Convert the reply to an integer
+        if bet_amount == 1:
+            bet_amount = 1000
+        if bet_amount > user_points:
+            await message.channel.send("포인트가 부족합니다.")
+            return
+    except asyncio.TimeoutError:
+        await message.channel.send("시간 초과입니다.")
+        return
+    except ValueError:
+        await message.channel.send("유효한 숫자를 입력해주세요.")
+        return
+
+    # Store the original bet amount for later use
+    original_bet_amount = bet_amount
+        # Deduct points
+    deduction_successful, new_points = deduct_points(self.connection, message.author.id, bet_amount)
+    if not deduction_successful:
+        await message.channel.send("Failed to deduct points.")
+        return
+
+    # 플레이어와 딜러에게 카드 두 장씩 나눠줌
+    for _ in range(2):
+        game.deal_card(game.player_hand)
+        game.deal_card(game.dealer_hand)
+
+
+
+    def cards_to_string(cards):
+        return ', '.join([f"{card['suit']} {card['rank']}" for card in cards])
+
+    player_score = game.calculate_score(game.player_hand)
+    player_cards_str = cards_to_string(game.player_hand)
+    # 플레이어와 딜러의 초기 카드 상태를 메시지로 전송
+    await message.channel.send(f"당신의 카드: {player_cards_str}, 점수: {player_score}")
+
+    dealer_score = game.calculate_score(game.dealer_hand)
+    dealer_cards_str = cards_to_string(game.dealer_hand)
+
+    await message.channel.send(f"딜러의 카드: {dealer_cards_str}, 점수: {dealer_score}")
+
+    # 플레이어의 행동 결정
+    player_busted = await game.player_turn(self, game, message)  # 버스트 여부를 반환하도록 수정
+
+    # 플레이어가 버스트되지 않았을 때만 딜러의 행동 결정
+    if not player_busted:
+        await game.dealer_turn(message)
+
+    # Determine game outcome and award points if the player wins
+    game_result = await game.announce_winner(game, message)  # Ensure this method returns the game result
+    # Check if the player won and award winnings
+    if game_result == "플레이어의 승리입니다.":  # Replace "player_wins" with the actual winning condition
+        winning_amount = original_bet_amount * 2
+        addition_successful, new_total_points = add_points(self.connection, message.author.id, winning_amount)
+        if addition_successful:
+            await message.channel.send(
+                f" {winning_amount} 포인트 획득. 현재 점수는 {new_total_points} 포인트입니다.")
+        else:
+            await message.channel.send("에러로 인해 포인트 획득을 실패했습니다.")
