@@ -1,5 +1,8 @@
 # lck_betting_discord_bot
 
+
+https://www.notion.so/kingkangkr/lck-09461b6462b34cb6bf4304ec28455f9c
+
 <사용자 등록하는 법>
  '!register' 또는 '!등록'  또는 '!ㄷㄹ' 을 한 후 방장이 디코 봇을 껐다 켜야지 등록이 됩니다. 사용자는 등록을 한번만 하면 됩니다.
 
