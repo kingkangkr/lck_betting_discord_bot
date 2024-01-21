@@ -1,7 +1,7 @@
 import random
 import asyncio
 from utils import *
-from texts import matches
+from texts import *
 from get_odds_of_matches import odds_list
 from blackjack import BlackjackGame
 #from math_question import generate_math_question
@@ -44,7 +44,7 @@ async def show_current_week_matches(message):
 
 
 async def get_betting_predictions(client, message):
-    current_week = get_current_week()
+    current_week = get_bet_week_number(bet_date_ranges)
     if current_week is None:
         await message.channel.send("현재 진행 중인 경기가 없습니다.")
         return
@@ -222,6 +222,9 @@ async def handle_weekly_summary(message, connection, odds_list):
 async def start_blackjack_game(self, message):
     game = BlackjackGame()
     discord_id = str(message.author.id)
+    if not is_user_registered(self.connection, discord_id):
+        await message.channel.send("먼저 !register를 이용해서 사용자 등록을 해주세요.")
+        return
     # Fetch user's current points (assuming a function exists to do this)
     user_points = get_user_points(self.connection, discord_id)
 
@@ -291,3 +294,28 @@ async def start_blackjack_game(self, message):
                 f" {winning_amount} 포인트 획득. 현재 점수는 {new_total_points} 포인트입니다.")
         else:
             await message.channel.send("에러로 인해 포인트 획득을 실패했습니다.")
+async def attendance_check(connection, discord_id, message):
+    today = datetime.now().date()
+
+    # Check if the user already checked in today
+    cursor = connection.cursor()
+    query = "SELECT * FROM Attendance WHERE DiscordID = %s AND DateChecked = %s"
+    cursor.execute(query, (discord_id, today))
+    attendance_record = cursor.fetchone()
+
+    if attendance_record:
+        # User has already checked in today
+        await message.channel.send("오늘 이미 출석체크를 했습니다.")
+    else:
+        # User has not checked in today, insert record and add points
+        insert_query = "INSERT INTO Attendance (DiscordID, DateChecked, Points, Name) VALUES (%s, %s, %s, %s)"
+        cursor.execute(insert_query, (discord_id, today, 10000, message.author.id))
+        connection.commit()
+
+        # Add points to user's account
+        add_success, new_points = add_points(connection, discord_id, 10000)
+        if add_success:
+            await show_current_week_matches(message)
+            await message.channel.send(f"포인트가 추가되었습니다. 새로운 포인트: {new_points}")
+
+    cursor.close()

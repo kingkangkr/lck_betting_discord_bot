@@ -2,6 +2,7 @@ from datetime import datetime
 from create_db import create_connection
 from mysql.connector import Error
 import os
+from texts import bet_date_ranges
 from get_odds_of_matches import odds_list
 db_password = os.getenv('db_password')
 
@@ -222,3 +223,14 @@ def get_users_ranked_by_points(connection):
     query = "SELECT Name, points FROM Users ORDER BY points DESC"
     cursor.execute(query)
     return cursor.fetchall()
+def get_bet_week_number(date_ranges, test_date=None):
+    today = test_date if test_date else datetime.now().date()
+
+    for idx, (start, end) in enumerate(date_ranges, start=1):
+        start_date = datetime.strptime(start, "%Y-%m-%d").date()
+        end_date = datetime.strptime(end, "%Y-%m-%d").date()
+        if start_date <= today <= end_date:
+            return idx
+
+    # Return None if the date is not in any range
+    return None

@@ -13,7 +13,7 @@ class MyClient(discord.Client):
 
     async def on_ready(self):
         print(f'Logged on as {self.user}!')
-        await self.change_presence(status=discord.Status.online, activity=discord.Game("대기중"))
+        await self.change_presence(status=discord.Status.online, activity=discord.Game("대기"))
 
     async def on_message(self, message):
         if message.author == self.user:
@@ -44,12 +44,9 @@ class MyClient(discord.Client):
             # 사용자에게 현재 포인트를 메시지로 전송
             await message.channel.send(f"현재 보유하신 포인트는 {user_points}포인트입니다.")
 
-        elif message.content == "!출석체크" or message.content == "!ㅊㅊ" or message.content == '!cc':
+        elif message.content in ["!출석체크", "!ㅊㅊ", '!cc']:
             discord_id = str(message.author.id)
-            add_success, new_points = add_points(self.connection, discord_id, 10000)
-            if add_success:
-                await show_current_week_matches(message)
-                await message.channel.send(f"포인트가 추가되었습니다. 새로운 포인트: {new_points}")
+            await attendance_check(self.connection, discord_id, message)
 
         elif message.content == "!순위" or message.content == "!ㅅㅇ":
             await show_rank(message)
@@ -66,8 +63,13 @@ class MyClient(discord.Client):
         elif message.content == "!블랙잭" or message.content == "!ㅂㄹㅈ":
             await start_blackjack_game(self, message)
 
+        elif message.content == "!명령어" or message.content == '!ㅁㄹㅇ':
+            await message.channel.send(commands_info)
         # elif message.content.startswith('!문제'):
         #     await self.math_quiz(message)
+
+        elif message.content == "!공지":
+            await message.channel.send(announcement)
 
         else:
             answer = get_answer(message.content)
