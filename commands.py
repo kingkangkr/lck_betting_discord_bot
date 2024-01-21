@@ -319,3 +319,7 @@ async def attendance_check(connection, discord_id, message):
             await message.channel.send(f"포인트가 추가되었습니다. 새로운 포인트: {new_points}")
 
     cursor.close()
+
+async def register_user(client, message):
+
+
