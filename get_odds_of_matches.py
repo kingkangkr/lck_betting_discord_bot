@@ -70,5 +70,3 @@ for match in formatted_matches:
     # 추출된 배당률을 숫자로 변환하여 튜플 형태로 저장
         odds_tuple = (float(odds[0]), float(odds[1]))
         odds_list.append(odds_tuple)
-
-print(odds_list)
