@@ -7,7 +7,7 @@ import time
 import os
 
 # Check if the HTML file already exists
-file_path = 'week1_odds.html'
+file_path = 'week2_odds.html'
 if os.path.isfile(file_path):
     # If the file exists, read its content
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -15,7 +15,7 @@ if os.path.isfile(file_path):
 else:
     # If the file doesn't exist, run Selenium to fetch the HTML
     options = Options()
-    options.headless = False  # Set to True for headless mode
+    options.headless = True  # Set to True for headless mode
     driver_path = r'C:\Users\Byung Mu Kang\Downloads\chromedriver_win32\chromedriver.exe'
     service = Service(executable_path=driver_path)
     driver = webdriver.Chrome(service=service, options=options)
