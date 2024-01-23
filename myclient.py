@@ -42,7 +42,7 @@ class MyClient(discord.Client):
             # 사용자의 현재 포인트를 조회
             user_points = get_user_points(self.connection, discord_id)
             # 사용자에게 현재 포인트를 메시지로 전송
-            await message.channel.send(f"현재 보유하신 포인트는 {user_points}포인트입니다.")
+            await message.channel.send(f"현재 보유하신 포인트는 {user_points}포인트입니다." + message.author.mention)
 
         elif message.content in ["!출석체크", "!ㅊㅊ", '!cc']:
             discord_id = str(message.author.id)
@@ -58,13 +58,13 @@ class MyClient(discord.Client):
             response = "방장 추천 LCK 영상:\n"
             for week, link in video_links.items():
                 response += f"{week}: {link}\n"
-            await message.channel.send(response)
+            await message.channel.send(response + message.author.mention)
 
         elif message.content == "!블랙잭" or message.content == "!ㅂㄹㅈ":
             await start_blackjack_game(self, message)
 
         elif message.content == "!명령어" or message.content == '!ㅁㄹㅇ':
-            await message.channel.send(commands_info)
+            await message.channel.send(commands_info + message.author.mention)
         # elif message.content.startswith('!문제'):
         #     await self.math_quiz(message)
 

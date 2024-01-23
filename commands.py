@@ -19,15 +19,15 @@ async def register_user(client, message):
 
     # Check if the user is already registered
     if is_user_registered(client.connection, discord_id):
-        await message.channel.send("이미 등록되어 있습니다.")
+        await message.channel.send("이미 등록되어 있습니다." + message.author.mention)
     else:
         # Register the user with both discord_id and name
         register_new_user(discord_id, name)
-        await message.channel.send(f"{message.author.mention}, 등록이 완료되었습니다.")
+        await message.channel.send(f"{message.author.mention}, 등록이 완료되었습니다." + message.author.mention)
 
 
 async def show_all_matches(message):
-    response = "전체 경기 일정:\n" + format_matches_by_week(matches)
+    response = "전체 경기 일정:\n" + format_matches_by_week(matches) + message.author.mention
     await message.channel.send(response)
 
 
@@ -40,18 +40,19 @@ async def show_current_week_matches(message):
         response = f"현재 주차: {week}주차 경기:\n"
         for match in matches_this_week:
             response += f"{match[0]} vs {match[1]}\n"
-    await message.channel.send(response)
+    await message.channel.send(response + message.author.mention)
 
 
 async def get_betting_predictions(client, message):
+    bet_possible = True
     current_week = get_bet_week_number(bet_date_ranges)
-    if current_week is None:
-        await message.channel.send("현재 진행 중인 경기가 없습니다.")
+    if current_week is None or bet_possible == False:
+        await message.channel.send("현재 진행 중인 경기가 없습니다." + message.author.mention)
         return
     discord_id = str(message.author.id)  # 사용자의 Discord ID
     # Check if the user is registered
     if not is_user_registered(client.connection, discord_id):
-        await message.channel.send("먼저 !register를 이용해서 사용자 등록을 해주세요.")
+        await message.channel.send("먼저 !register를 이용해서 사용자 등록을 해주세요." + message.author.mention)
         return
     # 데이터베이스에서 동일한 주차와 Discord ID에 대한 베팅 확인
     cursor = client.connection.cursor()
@@ -62,14 +63,14 @@ async def get_betting_predictions(client, message):
     cursor.close()
 
     if existing_bet:
-        await message.channel.send("이미 이번 주에 베팅을 하셨습니다.")
+        await message.channel.send("이미 이번 주에 베팅을 하셨습니다." + message.author.mention)
         return
     cursor = client.connection.cursor()
     cursor.execute("SELECT Points FROM Users WHERE DiscordID = %s", (discord_id,))
     result = cursor.fetchone()
     if result is None:
         # No user record found in the database
-        await message.channel.send("등록이 완료되지 않았습니다.")
+        await message.channel.send("등록이 완료되지 않았습니다." + message.author.mention)
         return
     else:
         user_points = result
@@ -82,7 +83,7 @@ async def get_betting_predictions(client, message):
 
         # 팀 선택 프롬프트
         team_prompt = f"{match[0]} vs {match[1]} - {match[0]} 배당: {odds[0]}, {match[1]} 배당: {odds[1]}. 승리 팀을 선택해주세요 (1 또는 2): "
-        await message.channel.send(team_prompt)
+        await message.channel.send(team_prompt + message.author.mention)
 
         def check_team_choice(m):
             return m.author == message.author and m.channel == message.channel and m.content in ['1', '2']
@@ -90,7 +91,7 @@ async def get_betting_predictions(client, message):
         try:
             team_choice = await client.wait_for('message', check=check_team_choice, timeout=30.0)
         except asyncio.TimeoutError:
-            await message.channel.send('시간 초과입니다. 다시 시도해주세요.')
+            await message.channel.send('시간 초과입니다. 다시 시도해주세요.' + message.author.mention)
             return
 
         # 사용자의 현재 포인트 가져오기
@@ -98,7 +99,7 @@ async def get_betting_predictions(client, message):
 
         # 베팅 금액 프롬프트
         bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. 베팅 금액으로 1을 입력할 시 기본 금액인 1000이 베팅 됩니다. 금액을 입력해주세요: "
-        await message.channel.send(bet_amount_prompt)
+        await message.channel.send(bet_amount_prompt+message.author.mention)
 
         def check_bet_amount(m):
             return (
@@ -118,15 +119,15 @@ async def get_betting_predictions(client, message):
 
                 # 베팅 금액이 사용자의 포인트보다 많은지 확인
                 if bet_amount > user_points:
-                    await message.channel.send('잘못된 베팅 금액입니다. 다시 입력해주세요.')
+                    await message.channel.send('잘못된 베팅 금액입니다. 다시 입력해주세요.' + message.author.mention)
                     continue  # 다시 입력 받음
                 break  # Valid bet amount received, break out of the loop
             except asyncio.TimeoutError:
-                await message.channel.send('시간초과입니다. 다시 시도해주세요.')
+                await message.channel.send('시간초과입니다. 다시 시도해주세요.' + message.author.mention)
                 return
             except ValueError:
                 # This exception handles non-integer inputs
-                await message.channel.send('잘못된 베팅 금액입니다. 다시 입력해주세요.')
+                await message.channel.send('잘못된 베팅 금액입니다. 다시 입력해주세요.' + message.author.mention)
         # 베팅 금액이 유효하게 입력되었을 때
         if bet_amount is not None:
             # 포인트 차감
@@ -134,11 +135,11 @@ async def get_betting_predictions(client, message):
 
             if deduction_successful:
                 # 포인트 차감 성공 처리
-                await message.channel.send(f"베팅이 완료되었습니다. 남은 포인트: {new_points}포인트")
+                await message.channel.send(f"베팅이 완료되었습니다. 남은 포인트: {new_points}포인트" + message.author.mention)
                 # 여기에 이후 처리 로직 추가 (예: betting_predictions에 베팅 정보 추가, DB에 저장 등)
             else:
                 # 포인트가 부족한 경우 처리
-                await message.channel.send("포인트가 부족합니다.")
+                await message.channel.send("포인트가 부족합니다." + message.author.mention)
                 return
         else:
             # 베팅 금액이 유효하지 않은 경우 처리
@@ -156,9 +157,9 @@ async def get_betting_predictions(client, message):
             all_saved_successfully = False
         # 모든 베팅 정보와 예상 수익 출력
     if all_saved_successfully:
-        await message.channel.send("DB에 정확히 저장되었습니다.")
+        await message.channel.send("DB에 정확히 저장되었습니다." + message.author.mention)
     else:
-        await message.channel.send("일부 베팅 정보가 DB에 저장되지 않았습니다.")
+        await message.channel.send("일부 베팅 정보가 DB에 저장되지 않았습니다." + message.author.mention)
     for i, prediction in enumerate(betting_predictions):
         selected_team_index = int(prediction[0]) - 1  # 선택한 팀 인덱스 (0 또는 1)
         team_name = week_matches[i][selected_team_index]  # 선택한 팀 이름
@@ -173,11 +174,11 @@ async def show_rank(message):
             response = "사용자 포인트 순위:\n"
             for rank, (user_id, points) in enumerate(ranked_users, start=1):
                 response += f"{rank}등: {user_id}, points {points}\n"
-            await message.channel.send(response)
+            await message.channel.send(response + message.author.mention)
         finally:
             connection.close()
     else:
-        await message.channel.send("데이터베이스 연결에 실패했습니다.")
+        await message.channel.send("데이터베이스 연결에 실패했습니다." + message.author.mention)
 async def handle_weekly_summary(message, connection, odds_list):
     week = get_current_week()
     week_bets = get_all_bets_by_week(connection, week)
@@ -223,14 +224,14 @@ async def start_blackjack_game(self, message):
     game = BlackjackGame()
     discord_id = str(message.author.id)
     if not is_user_registered(self.connection, discord_id):
-        await message.channel.send("먼저 !register를 이용해서 사용자 등록을 해주세요.")
+        await message.channel.send("먼저 !register를 이용해서 사용자 등록을 해주세요." + message.author.mention)
         return
     # Fetch user's current points (assuming a function exists to do this)
     user_points = get_user_points(self.connection, discord_id)
 
         # Ask for bet amount
     bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. 베팅 금액으로 1을 입력할 시 기본 금액인 1000이 베팅 됩니다. 금액을 입력해주세요: "
-    await message.channel.send(bet_amount_prompt)
+    await message.channel.send(bet_amount_prompt + message.author.mention)
 
     # Wait for player's response and validate bet
     try:
@@ -239,13 +240,13 @@ async def start_blackjack_game(self, message):
         if bet_amount == 1:
             bet_amount = 1000
         if bet_amount > user_points:
-            await message.channel.send("포인트가 부족합니다.")
+            await message.channel.send("포인트가 부족합니다." + message.author.mention)
             return
     except asyncio.TimeoutError:
-        await message.channel.send("시간 초과입니다.")
+        await message.channel.send("시간 초과입니다." + message.author.mention)
         return
     except ValueError:
-        await message.channel.send("유효한 숫자를 입력해주세요.")
+        await message.channel.send("유효한 숫자를 입력해주세요." + message.author.mention)
         return
 
     # Store the original bet amount for later use
@@ -253,7 +254,7 @@ async def start_blackjack_game(self, message):
         # Deduct points
     deduction_successful, new_points = deduct_points(self.connection, message.author.id, bet_amount)
     if not deduction_successful:
-        await message.channel.send("Failed to deduct points.")
+        await message.channel.send("Failed to deduct points." + message.author.mention)
         return
 
     # 플레이어와 딜러에게 카드 두 장씩 나눠줌
@@ -269,12 +270,12 @@ async def start_blackjack_game(self, message):
     player_score = game.calculate_score(game.player_hand)
     player_cards_str = cards_to_string(game.player_hand)
     # 플레이어와 딜러의 초기 카드 상태를 메시지로 전송
-    await message.channel.send(f"당신의 카드: {player_cards_str}, 점수: {player_score}")
+    await message.channel.send(f"당신의 카드: {player_cards_str}, 점수: {player_score}" + message.author.mention)
 
     dealer_score = game.calculate_score(game.dealer_hand)
     dealer_cards_str = cards_to_string(game.dealer_hand)
 
-    await message.channel.send(f"딜러의 카드: {dealer_cards_str}, 점수: {dealer_score}")
+    await message.channel.send(f"딜러의 카드: {dealer_cards_str}, 점수: {dealer_score}" + message.author.mention)
 
     # 플레이어의 행동 결정
     player_busted = await game.player_turn(self, game, message)  # 버스트 여부를 반환하도록 수정
@@ -291,9 +292,16 @@ async def start_blackjack_game(self, message):
         addition_successful, new_total_points = add_points(self.connection, message.author.id, winning_amount)
         if addition_successful:
             await message.channel.send(
-                f" {winning_amount} 포인트 획득. 현재 점수는 {new_total_points} 포인트입니다.")
+                f" {winning_amount} 포인트 획득. 현재 점수는 {new_total_points} 포인트입니다." + message.author.mention)
         else:
-            await message.channel.send("에러로 인해 포인트 획득을 실패했습니다.")
+            await message.channel.send("에러로 인해 포인트 획득을 실패했습니다." + message.author.mention)
+    elif game_result == "무승부입니다.":
+        addition_successful, new_total_points = add_points(self.connection, message.author.id, original_bet_amount)
+        if addition_successful:
+            await message.channel.send(
+                f" {original_bet_amount} 반환. 현재 점수는 {new_total_points} 포인트입니다."+ message.author.mention)
+        else:
+            await message.channel.send("에러로 인해 포인트 반환이 실패했습니다."+ message.author.mention)
 async def attendance_check(connection, discord_id, message):
     today = datetime.now().date()
 
@@ -305,7 +313,7 @@ async def attendance_check(connection, discord_id, message):
 
     if attendance_record:
         # User has already checked in today
-        await message.channel.send("오늘 이미 출석체크를 했습니다.")
+        await message.channel.send("오늘 이미 출석체크를 했습니다." + message.author.mention)
     else:
         # User has not checked in today, insert record and add points
         insert_query = "INSERT INTO Attendance (DiscordID, DateChecked, Points, Name) VALUES (%s, %s, %s, %s)"
@@ -316,6 +324,6 @@ async def attendance_check(connection, discord_id, message):
         add_success, new_points = add_points(connection, discord_id, 10000)
         if add_success:
             await show_current_week_matches(message)
-            await message.channel.send(f"포인트가 추가되었습니다. 새로운 포인트: {new_points}")
+            await message.channel.send(f"포인트가 추가되었습니다. 새로운 포인트: {new_points}"+ message.author.mention)
 
     cursor.close()

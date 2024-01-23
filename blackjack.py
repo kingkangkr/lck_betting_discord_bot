@@ -43,16 +43,15 @@ class BlackjackGame:
 
     async def player_turn(self, client, game, message):
         while True:
-            await message.channel.send("히트 하시려면 '히트'나 'ㅎㅌ', 스탠드 하시려면 '스탠드'나 'ㅅㅌㄷ'라고 입력해주세요.")
+            await message.channel.send("히트 하시려면 '히트'나 'ㅎㅌ', 스탠드 하시려면 '스탠드'나 'ㅅㅌㄷ'라고 입력해주세요. 시간제한 30초"+ message.author.mention)
             reply = await client.wait_for('message', check=lambda m: m.content in ["히트", "스탠드","ㅎㅌ","ㅅㅌㄷ"] and m.channel == message.channel and m.author == message.author, timeout=30.0)
-            print(f"Received reply: {reply.content}")  # 디버깅 메시지
             if reply.content == "히트" or reply.content == "ㅎㅌ":
                 game.deal_card(game.player_hand)
                 score = game.calculate_score(game.player_hand)
                 player_cards_str = self.cards_to_string(game.player_hand)
-                await message.channel.send(f"당신의 카드: {player_cards_str}, 점수: {score}")
+                await message.channel.send(f"당신의 카드: {player_cards_str}, 점수: {score}"+ message.author.mention)
                 if score > 21:
-                    await message.channel.send("버스트! 점수가 21을 넘었습니다.")
+                    await message.channel.send("버스트! 점수가 21을 넘었습니다."+ message.author.mention)
                     break
             elif reply.content == "스탠드" or reply.content == "ㅅㅌㄷ":
                 break
@@ -64,7 +63,7 @@ class BlackjackGame:
             dealer_cards_str = self.cards_to_string(self.dealer_hand)
 
             if score > 21:
-                await message.channel.send(f"딜러가 버스트했습니다! 딜러의 카드: {dealer_cards_str}, 점수: {score}")
+                await message.channel.send(f"딜러가 버스트했습니다! 딜러의 카드: {dealer_cards_str}, 점수: {score}"+ message.author.mention)
                 break
 
     async def announce_winner(self, game, message):
@@ -74,7 +73,7 @@ class BlackjackGame:
         dealer_cards_str = self.cards_to_string(game.dealer_hand)
 
         # 딜러의 전체 카드 공개
-        await message.channel.send(f"딜러의 카드: {dealer_cards_str}, 점수: {dealer_score}")
+        await message.channel.send(f"딜러의 카드: {dealer_cards_str}, 점수: {dealer_score}"+ message.author.mention)
 
         result = "무승부입니다."
         if player_score > 21:
@@ -85,8 +84,8 @@ class BlackjackGame:
             result = "딜러의 승리입니다."
 
         # 플레이어의 카드 및 게임 결과 공개
-        await message.channel.send(f"당신의 카드: {player_cards_str}, 점수: {player_score}")
-        await message.channel.send(f"게임 결과: {result}")
+        await message.channel.send(f"당신의 카드: {player_cards_str}, 점수: {player_score}"+ message.author.mention)
+        await message.channel.send(f"게임 결과: {result}"+ message.author.mention)
         return result
 
 
