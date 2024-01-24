@@ -2,6 +2,7 @@ from datetime import datetime
 from create_db import create_connection
 from mysql.connector import Error
 import os
+import random
 from texts import bet_date_ranges
 from get_odds_of_matches import odds_list
 db_password = os.getenv('db_password')
@@ -234,3 +235,19 @@ def get_bet_week_number(date_ranges, test_date=None):
 
     # Return None if the date is not in any range
     return None
+
+def generate_math_question():
+
+    # Types of operations
+    operations = ['+', '-', '*']
+    operation = random.choice(operations)
+
+    # Generating two random numbers
+    num1 = random.randint(1, 10)
+    num2 = random.randint(1, 10)
+
+    # Creating the question and calculating the answer
+    question = f"{num1} {operation} {num2}"
+    answer = round(eval(question), 2)
+
+    return question, answer
