@@ -44,7 +44,7 @@ async def show_current_week_matches(message):
 
 
 async def get_betting_predictions(client, message):
-    bet_possible = True
+    bet_possible = False
     current_week = get_bet_week_number(bet_date_ranges)
     if current_week is None or bet_possible == False:
         await message.channel.send("현재 진행 중인 경기가 없습니다." + message.author.mention)
@@ -327,3 +327,60 @@ async def attendance_check(connection, discord_id, message):
             await message.channel.send(f"포인트가 추가되었습니다. 새로운 포인트: {new_points}"+ message.author.mention)
 
     cursor.close()
+
+async def math_question(self, message, connection):
+    # Generate a math question
+    question, answer = generate_math_question()
+
+    # Initialize response string
+    response = f"문제: {question} = ?\n"
+    ans = ""
+    await message.channel.send(response)
+    # Function to check user's response
+    def check(m):
+        return m.author == message.author and m.channel == message.channel
+
+    try:
+        # Wait for user's response
+        response_msg = await self.wait_for('message', check=check, timeout=3.0)
+
+        try:
+            # Attempt to convert response to float
+            user_answer = float(response_msg.content)
+            success = fail = False  # Initialize variables
+
+            # Check if the answer is correct
+            if user_answer == answer:
+                ans += "정답"
+                success, new_points = add_points(connection, message.author.id, 500)
+
+            else:
+                ans += f"틀렸습니다. 정답은 {answer}"
+                # Deduct points for a wrong answer
+                fail , new_points = deduct_points(connection, message.author.id, 500)
+            # Provide feedback about points
+            if success:
+                ans += f" 포인트가 추가되었습니다. 새로운 포인트 : {new_points}"
+            elif fail:
+                ans += f" 포인트가 감소되었습니다. 새로운 포인트 : {new_points}"
+        except ValueError:
+            ans += "숫자를 입력하세요."
+            fail, new_points = deduct_points(connection, message.author.id, 500)
+            if fail:
+                ans += f" 포인트가 감소했습니다. 새로운 포인트 : {new_points}"
+            else:
+                ans += " 오류"
+
+    except asyncio.TimeoutError:
+        ans += "시간 초과"
+        success, new_points = deduct_points(connection, message.author.id, 500)
+        if success:
+            ans += f" 포인트가 감소했습니다. 새로운 포인트 : {new_points}"
+        else:
+            ans += " 오류"
+
+    # Send the compiled response
+    await message.channel.send(ans + message.author.mention)
+
+
+

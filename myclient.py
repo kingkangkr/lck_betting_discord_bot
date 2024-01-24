@@ -71,6 +71,11 @@ class MyClient(discord.Client):
         elif message.content == "!공지":
             await message.channel.send(announcement)
 
+
+        elif message.content in ["!ㅁㅈ", "!문제", '!aw']:
+            await math_question(self, message, self.connection)
+
+
         else:
             answer = get_answer(message.content)
             if answer:
