@@ -334,6 +334,7 @@ async def attendance_check(connection, discord_id, message):
 
     cursor.close()
 
+
 async def math_question(self, message, connection):
     # Generate a math question
     question, answer = generate_math_question()
@@ -387,6 +388,9 @@ async def math_question(self, message, connection):
 
     # Send the compiled response
     await message.channel.send(ans + message.author.mention)
+
+
+async def register_user(client, message):
 
 
 
