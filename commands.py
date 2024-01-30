@@ -6,7 +6,7 @@ from get_odds_of_matches import odds_list
 from blackjack import BlackjackGame
 #from math_question import generate_math_question
 
-weekly_summaries = []
+weekly_summaries_2 = []
 async def play_game(message):
     choices = ['가위', '바위', '보']
     bot_choice = random.choice(choices)
@@ -44,7 +44,7 @@ async def show_current_week_matches(message):
 
 
 async def get_betting_predictions(client, message):
-    bet_possible = False
+    bet_possible = True
     current_week = get_bet_week_number(bet_date_ranges)
     if current_week is None or bet_possible == False:
         await message.channel.send("현재 진행 중인 경기가 없습니다." + message.author.mention)
@@ -75,6 +75,11 @@ async def get_betting_predictions(client, message):
     else:
         user_points = result
     week_matches = get_matches_for_current_week(current_week, matches)
+    # Add points to user's account
+    add_success, new_points = add_points(client.connection, discord_id, 70000)
+    if add_success:
+        await show_current_week_matches(message)
+        await message.channel.send(f"70000 포인트가 추가되었습니다. 새로운 포인트: {new_points}" + message.author.mention)
     betting_predictions = []
     all_saved_successfully = True  # 모든 저장이 성공했는지 추적하는 변수
     for i, match in enumerate(week_matches):
@@ -98,7 +103,7 @@ async def get_betting_predictions(client, message):
         user_points = get_user_points(client.connection, discord_id)
 
         # 베팅 금액 프롬프트
-        bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. 베팅 금액으로 1을 입력할 시 기본 금액인 1000이 베팅 됩니다. 금액을 입력해주세요: "
+        bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. \n베팅 금액으로 1을 입력할 시 기본 금액인 1000이 베팅 됩니다. \n금액을 입력해주세요: "
         await message.channel.send(bet_amount_prompt+message.author.mention)
 
         def check_bet_amount(m):
@@ -180,12 +185,9 @@ async def show_rank(message):
     else:
         await message.channel.send("데이터베이스 연결에 실패했습니다." + message.author.mention)
 async def handle_weekly_summary(message, connection, odds_list):
-    week = get_current_week()
-    week_bets = get_all_bets_by_week(connection, week)
-    match_results = [2, 1, 2, 1, 1, 2, 2, 2, 2, 2]  # 이번 주 경기 결과
-
+    week_bets = get_all_bets_by_week(connection, 2)
+    match_results = [2, 1, 1, 2, 2, 2, 1, 2, 1, 2]  # 이번 주 경기 결과
     betting_winnings, result = calculate_betting_results(match_results, odds_list, week_bets)
-
     # 각 사용자의 포인트를 데이터베이스에 업데이트
     for discord_id, winnings in betting_winnings.items():
         add_success, new_points = add_points(connection, discord_id, winnings)
@@ -218,7 +220,11 @@ async def handle_weekly_summary(message, connection, odds_list):
         response += f"{user_name if user_name else 'Unknown'}: {wins}승\n"
 
     await message.channel.send(response)
-    weekly_summaries.append(response)
+    weekly_summaries_2.append(response)
+    # Write each item on a new line in the txt file
+    with open('weekly_summaries_2.txt', 'w') as file:
+        for item in weekly_summaries_2:
+            file.write(f"{item}\n")  # Add each item on a new line
 
 async def start_blackjack_game(self, message):
     game = BlackjackGame()
@@ -230,7 +236,7 @@ async def start_blackjack_game(self, message):
     user_points = get_user_points(self.connection, discord_id)
 
         # Ask for bet amount
-    bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. 베팅 금액으로 1을 입력할 시 기본 금액인 1000이 베팅 됩니다. 금액을 입력해주세요: "
+    bet_amount_prompt = f"얼마를 베팅하시겠습니까? 현재 보유 포인트: {user_points}포인트. \n베팅 금액으로 1을 입력할 시 기본 금액인 1000이 베팅 됩니다. \n금액을 입력해주세요: "
     await message.channel.send(bet_amount_prompt + message.author.mention)
 
     # Wait for player's response and validate bet
@@ -333,7 +339,7 @@ async def math_question(self, message, connection):
     question, answer = generate_math_question()
 
     # Initialize response string
-    response = f"문제: {question} = ?\n"
+    response = f"문제: {question} = ?  "  + message.author.mention +'\n'
     ans = ""
     await message.channel.send(response)
     # Function to check user's response
@@ -355,7 +361,7 @@ async def math_question(self, message, connection):
                 success, new_points = add_points(connection, message.author.id, 500)
 
             else:
-                ans += f"틀렸습니다. 정답은 {answer}"
+                ans += f"틀렸습니다. 정답은 {answer}."
                 # Deduct points for a wrong answer
                 fail , new_points = deduct_points(connection, message.author.id, 500)
             # Provide feedback about points

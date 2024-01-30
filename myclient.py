@@ -76,6 +76,9 @@ class MyClient(discord.Client):
             await math_question(self, message, self.connection)
 
 
+        elif message.content == "!추가공지":
+            await message.channel.send(additional_announce)
+
         else:
             answer = get_answer(message.content)
             if answer:

@@ -7,7 +7,7 @@ import time
 import os
 
 # Check if the HTML file already exists
-file_path = 'week2_odds.html'
+file_path = 'week3_odds.html'
 if os.path.isfile(file_path):
     # If the file exists, read its content
     with open(file_path, 'r', encoding='utf-8') as file:
