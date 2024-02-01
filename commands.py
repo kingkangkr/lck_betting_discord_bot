@@ -6,7 +6,7 @@ from get_odds_of_matches import odds_list
 from blackjack import BlackjackGame
 #from math_question import generate_math_question
 
-weekly_summaries_2 = []
+weekly_summaries_3 = []
 async def play_game(message):
     choices = ['가위', '바위', '보']
     bot_choice = random.choice(choices)
@@ -44,9 +44,9 @@ async def show_current_week_matches(message):
 
 
 async def get_betting_predictions(client, message):
-    bet_possible = True
+    bet_possible = False
     current_week = get_bet_week_number(bet_date_ranges)
-    if current_week is None or bet_possible == False:
+    if current_week is None or bet_possible is False:
         await message.channel.send("현재 진행 중인 경기가 없습니다." + message.author.mention)
         return
     discord_id = str(message.author.id)  # 사용자의 Discord ID
@@ -185,7 +185,7 @@ async def show_rank(message):
     else:
         await message.channel.send("데이터베이스 연결에 실패했습니다." + message.author.mention)
 async def handle_weekly_summary(message, connection, odds_list):
-    week_bets = get_all_bets_by_week(connection, 2)
+    week_bets = get_all_bets_by_week(connection, 3)
     match_results = [2, 1, 1, 2, 2, 2, 1, 2, 1, 2]  # 이번 주 경기 결과
     betting_winnings, result = calculate_betting_results(match_results, odds_list, week_bets)
     # 각 사용자의 포인트를 데이터베이스에 업데이트
@@ -220,10 +220,10 @@ async def handle_weekly_summary(message, connection, odds_list):
         response += f"{user_name if user_name else 'Unknown'}: {wins}승\n"
 
     await message.channel.send(response)
-    weekly_summaries_2.append(response)
+    weekly_summaries_3.append(response)
     # Write each item on a new line in the txt file
-    with open('weekly_summaries_2.txt', 'w') as file:
-        for item in weekly_summaries_2:
+    with open('weekly_summaries_3.txt', 'w') as file:
+        for item in weekly_summaries_3:
             file.write(f"{item}\n")  # Add each item on a new line
 
 async def start_blackjack_game(self, message):
