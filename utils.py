@@ -25,6 +25,8 @@ def get_answer(text):
         '안녕': '안녕하세요. 키타 이쿠요입니다.',
         '요일': f':calendar: 오늘은 {get_day_of_week()}입니다',
         '시간': f':clock9: 현재 시간은 {get_time()}입니다.',
+        'ㅎㅇ': '안녕하세요. 키타 이쿠요입니다.',
+        '하이': '안녕하세요. 키타 이쿠요입니다.'
     }
 
     if not trim_text:
