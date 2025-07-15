@@ -1,7 +1,6 @@
 # lck_betting_discord_bot
 
 
-https://www.notion.so/kingkangkr/lck-09461b6462b34cb6bf4304ec28455f9c
 
 LCK 베팅 포인트 관리 봇입니다.
 1주차~9주차 경기 베팅이 가능하고, 그 주 베팅을 하기 위해서는 그 전주 수요일부터 그 주 화요일까지 베팅이 가능합니다.
